@@ -10,13 +10,14 @@
     "type": "git",
     "url": "git+https://github.com/ltacker/request-chain-storage.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "ltacker",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ltacker/request-chain-storage/issues"
   },
   "homepage": "https://github.com/ltacker/request-chain-storage#readme",
   "dependencies": {
     "axios": "^0.19.0"
-  }
+  },
+  "devDependencies": {}
 }
