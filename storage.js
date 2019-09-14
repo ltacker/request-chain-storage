@@ -20,7 +20,7 @@ class RequestChainStorage {
   async initialize () {}
 
   async append (data) {
-    appendResult = await api.appendBlock(data, this.requestChainOptions)
+    const appendResult = await api.appendBlock(data, this.requestChainOptions)
 
     return {
       meta: {
@@ -33,7 +33,7 @@ class RequestChainStorage {
   }
 
   async read (dataId) {
-    readResult = await api.getBlock(parseInt(dataId), this.requestChainOptionsTest)
+    const readResult = await api.getBlock(parseInt(dataId), this.requestChainOptions)
 
     return {
       meta: {
@@ -46,9 +46,9 @@ class RequestChainStorage {
   }
 
   async readMany (dataIds) {
-    const readPromises
+    const readPromises = []
 
-    for(let i=0; i<dataIds.len; i++) {
+    for(let i=0; i<dataIds.length; i++) {
       readPromises.push(this.read(dataIds[i]))
     }
 
@@ -56,9 +56,7 @@ class RequestChainStorage {
   }
 
   // TODO: Optimize API calls
-  async getData (options?: ITimestampBoundaries) {
-    let lastTimestamp
-
+  async getData (options) {
     const emptyResult = {
       meta: {
         metaData: [],
@@ -71,7 +69,7 @@ class RequestChainStorage {
     }
 
     // No block check
-    const blockCount = await api.getBlockCount(this.requestChainOptionsTest)
+    const blockCount = await api.getBlockCount(this.requestChainOptions)
     if (blockCount === 0) {
       return emptyResult
     }
@@ -79,10 +77,10 @@ class RequestChainStorage {
     let blockFrom = 0
     let blockTo = blockCount-1
 
-    firstResult = await api.getBlock(blockFrom, this.requestChainOptionsTest)
-    lastResult = await api.getBlock(blockTo, this.requestChainOptionsTest)
+    const firstResult = await api.getBlock(blockFrom, this.requestChainOptions)
+    const lastResult = await api.getBlock(blockTo, this.requestChainOptions)
     const firstTimestamp = firstResult.timestamp
-    const lastTimestamp = lastResult.timestamp
+    let lastTimestamp = lastResult.timestamp
 
     // Check first if the timestamp is out of range
     if (options && options.from && options.from > lastTimestamp) {
@@ -95,28 +93,28 @@ class RequestChainStorage {
 
     // Find block index to search from
     if (options && options.from && options.from > firstTimestamp) {
-      const tmp = getBlocksSurroundingTimestamp(blockFrom, blockTo, options.from)
+      const tmp = await this.getBlocksSurroundingTimestamp(blockFrom, blockTo, options.from)
       blockFrom = tmp.blockAfter
     }
 
     // Find block index to search to
     if (options && options.to && options.to < lastTimestamp) {
-      const tmp = getBlocksSurroundingTimestamp(blockFrom, blockTo, options.to)
-      blockto = tmp.blockBefore
+      const tmp = await this.getBlocksSurroundingTimestamp(blockFrom, blockTo, options.to)
+      blockTo = tmp.blockBefore
     }
 
     // Fetch all block
     const metadataArray = []
     const dataIdArray = []
     const dataArray = []
-    for(let blockIterator = blockFrom; blockIterator <= blockto; blockIterator++) {
+    for(let blockIterator = blockFrom; blockIterator <= blockTo; blockIterator++) {
       dataIdArray.push(blockIterator.toString())
 
-      const readResult = await api.getBlock(blockIterator, this.requestChainOptionsTest)
+      const readResult = await api.getBlock(blockIterator, this.requestChainOptions)
       metadataArray.push({timestamp: readResult.timestamp})
       dataArray.push(readResult.block)
 
-      if(blockIterator === blockto) {
+      if(blockIterator === blockTo) {
         lastTimestamp = readResult.timestamp
       }
     }
@@ -133,13 +131,13 @@ class RequestChainStorage {
     }
   }
 
-  async getDataId (options?: ITimestampBoundaries) {
-    const getDataResult = await getData(options)
+  async getDataId (options) {
+    const getDataResult = await this.getData(options)
 
     return {
       meta: getDataResult.meta,
       result: {
-        data: getDataResult.result.data,
+        dataIds: getDataResult.result.dataIds,
       },
     }
   }
@@ -147,18 +145,18 @@ class RequestChainStorage {
   async getBlocksSurroundingTimestamp(blockFrom, blockTo, timestamp) {
     let blockFromTmp = blockFrom
     let blockToTmp = blockTo
-    let blockHalf = (blockFromTmp+blockToTmp)/2
+    let blockHalf = Math.floor((blockFromTmp+blockToTmp)/2)
     let readResult
 
-    while(blockFromTmp < blockToTmp) {
-      readResult = await api.getBlock(blockHalf, this.requestChainOptionsTest)
+    while(blockFromTmp < blockToTmp-1) {
+      readResult = await api.getBlock(blockHalf, this.requestChainOptions)
 
-      if(readResult.timestamp < options.from) {
+      if(readResult.timestamp > timestamp) {
         blockToTmp = blockHalf
-        blockHalf = (blockFromTmp+blockToTmp)/2
-      } else if(readResult.timestamp > options.from) {
+        blockHalf = Math.floor((blockFromTmp+blockToTmp)/2)
+      } else if(readResult.timestamp < timestamp) {
         blockFromTmp = blockHalf
-        blockHalf = (blockFromTmp+blockToTmp)/2
+        blockHalf = Math.floor((blockFromTmp+blockToTmp)/2)
       } else {
         return {
           blockBefore: blockHalf,
@@ -173,3 +171,5 @@ class RequestChainStorage {
     }
   }
 }
+
+exports.default = RequestChainStorage;
