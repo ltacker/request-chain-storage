@@ -122,7 +122,7 @@ class RequestChainStorage {
     return {
       meta: {
         metaData: metadataArray,
-        lastTimestamp,
+        lastTimestamp + 1,
       },
       result: {
         dataIds: dataIdArray,
