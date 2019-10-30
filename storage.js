@@ -22,6 +22,10 @@ class RequestChainStorage {
   async append (data) {
     const appendResult = await api.appendBlock(data, this.requestChainOptions)
 
+    if (!appendResult.index || !appendResult.timestamp) {
+      throw Error(`Incorrect data returned by API: ${appendResult}`)
+    }
+
     return {
       meta: {
         timestamp: appendResult.timestamp,
@@ -81,6 +85,9 @@ class RequestChainStorage {
     const lastResult = await api.getBlock(blockTo, this.requestChainOptions)
     const firstTimestamp = firstResult.timestamp
     let lastTimestamp = lastResult.timestamp
+
+    // Keep last timestamp for empty result
+    emptyResult.meta.lastTimestamp = lastTimestamp + 1
 
     // Check first if the timestamp is out of range
     if (options && options.from && options.from > lastTimestamp) {
