@@ -60,6 +60,13 @@ module.exports = {
       }
     })
 
+    // amount:[
+    //   {
+    //     denom: 'stake',
+    //     amount: '1'
+    //   }
+    // ],
+
     // Sign and broadcast the transaction
     try {
       res = await axios.post(`${requestChainOptions.restUrl}/requestchain/broadcast`, messageToBroadcast, {
