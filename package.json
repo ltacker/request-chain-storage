@@ -1,6 +1,6 @@
 {
   "name": "request-chain-storage",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Example of implementation of the storage layer of the Request protocol using Request Chain",
   "main": "index.js",
   "scripts": {

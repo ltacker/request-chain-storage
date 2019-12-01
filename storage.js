@@ -22,7 +22,7 @@ class RequestChainStorage {
   async append (data) {
     const appendResult = await api.appendBlock(data, this.requestChainOptions)
 
-    if (!appendResult.index || !appendResult.timestamp) {
+    if (appendResult.index === undefined || !appendResult.timestamp === undefined) {
       throw Error(`Incorrect data returned by API: ${appendResult}`)
     }
 

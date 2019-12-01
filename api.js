@@ -83,6 +83,6 @@ module.exports = {
       throw(res.status)
     }
 
-    return res.data.result
+    return res.data
   },
 }
