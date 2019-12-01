@@ -14,7 +14,7 @@ module.exports = {
       throw(res.status)
     }
 
-    return res.data
+    return res.data.result
   },
   getBlockCount: async (requestChainOptions) => {
     let res
@@ -29,7 +29,7 @@ module.exports = {
       throw(res.status)
     }
 
-    return res.data
+    return res.data.result
   },
   appendBlock: async (blockContent, requestChainOptions) => {
     let res
@@ -83,6 +83,6 @@ module.exports = {
       throw(res.status)
     }
 
-    return res.data
+    return res.data.result
   },
 }
